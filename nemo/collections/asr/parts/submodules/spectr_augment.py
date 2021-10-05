@@ -144,11 +144,11 @@ class SpecCutout(nn.Module, Typing):
 
         for idx in range(sh[0]):
             for i in range(self.rect_masks):
-                rect_x = self._rng.randint(0, sh[1] - self.rect_freq)
-                rect_y = self._rng.randint(0, sh[2] - self.rect_time)
+                rect_x = self._rng.randint(0, max(0, sh[1] - self.rect_freq))
+                rect_y = self._rng.randint(0, max(0, sh[2] - self.rect_time))
 
-                w_x = self._rng.randint(0, self.rect_freq)
-                w_y = self._rng.randint(0, self.rect_time)
+                w_x = self._rng.randint(0, min(sh[1], self.rect_freq))
+                w_y = self._rng.randint(0, min(sh[2], self.rect_time))
 
                 input_spec[idx, rect_x : rect_x + w_x, rect_y : rect_y + w_y] = 0.0
 
