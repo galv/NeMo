@@ -1027,6 +1027,11 @@ class _TarredAudioToTextDataset(IterableDataset):
             All training files which have a duration more than max_duration
             are dropped. Note: Duration is read from the manifest JSON.
             Defaults to None.
+        max_cer (float): Dataset parameter.
+            An observation's CER can optionally be scored with respect to an 
+            external reference transcription. All training files which have CER
+            more than max_cer are dropped. Note: CER is read from the manifest
+            JSON. Defaults to None.
         max_utts (int): Limit number of utterances. 0 means no maximum.
         blank_index (int): Blank character index, defaults to -1.
         unk_index (int): Unknown character index, defaults to -1.
@@ -1258,6 +1263,11 @@ class TarredAudioToCharDataset(_TarredAudioToTextDataset):
             All training files which have a duration more than max_duration
             are dropped. Note: Duration is read from the manifest JSON.
             Defaults to None.
+        max_cer (float): Dataset parameter.
+            An observation's CER can optionally be scored with respect to an 
+            external reference transcription. All training files which have CER
+            more than max_cer are dropped. Note: CER is read from the manifest
+            JSON. Defaults to None.
         max_utts (int): Limit number of utterances. 0 means no maximum.
         blank_index (int): Blank character index, defaults to -1.
         unk_index (int): Unknown character index, defaults to -1.

@@ -128,6 +128,7 @@ class AudioText(_Collection):
             parser: Instance of `CharParser` to convert string to tokens.
             min_duration: Minimum duration to keep entry with (default: None).
             max_duration: Maximum duration to keep entry with (default: None).
+            max_cer: Maximum cer to keep entry with (default: None).
             max_number: Maximum number of samples to collect.
             do_sort_by_duration: True if sort samples list by duration. Not compatible with index_by_file_id.
             index_by_file_id: If True, saves a mapping from filename base (ID) to index in data.
