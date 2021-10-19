@@ -154,7 +154,7 @@ class AudioText(_Collection):
                 continue
 
             # CER filter.
-            if max_cer is not None and (cer is None or cer >= max_cer):
+            if (max_cer is not None) and (cer is not None) and (cer >= max_cer):
                 num_filtered += 1
                 duration_filtered += duration
                 continue
