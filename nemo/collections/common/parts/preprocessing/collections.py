@@ -100,6 +100,7 @@ class AudioText(_Collection):
         ids: List[int],
         audio_files: List[str],
         durations: List[float],
+        cers: List[float],
         texts: List[str],
         offsets: List[str],
         speakers: List[Optional[int]],
@@ -109,6 +110,7 @@ class AudioText(_Collection):
         min_duration: Optional[float] = None,
         max_duration: Optional[float] = None,
         max_number: Optional[int] = None,
+        max_cer: Optional[float] = None,
         do_sort_by_duration: bool = False,
         index_by_file_id: bool = False,
     ):
@@ -136,8 +138,8 @@ class AudioText(_Collection):
         if index_by_file_id:
             self.mapping = {}
 
-        for id_, audio_file, duration, offset, text, speaker, orig_sr, lang in zip(
-            ids, audio_files, durations, offsets, texts, speakers, orig_sampling_rates, langs
+        for id_, audio_file, duration, offset, cer, text, speaker, orig_sr, lang in zip(
+            ids, audio_files, durations, offsets, cers, texts, speakers, orig_sampling_rates, langs
         ):
             # Duration filters.
             if min_duration is not None and duration < min_duration:
@@ -148,6 +150,12 @@ class AudioText(_Collection):
             if max_duration is not None and duration > max_duration:
                 duration_filtered += duration
                 num_filtered += 1
+                continue
+
+            # CER filter.
+            if max_cer is not None and (cer is None or cer >= max_cer):
+                num_filtered += 1
+                duration_filtered += duration
                 continue
 
             if text != '':
@@ -202,18 +210,19 @@ class ASRAudioText(AudioText):
             **kwargs: Kwargs to pass to `AudioText` constructor.
         """
 
-        ids, audio_files, durations, texts, offsets, speakers, orig_srs, langs = [], [], [], [], [], [], [], []
+        ids, audio_files, durations, cers, texts, offsets, speakers, orig_srs, langs = [], [], [], [], [], [], [], [], []
         for item in manifest.item_iter(manifests_files):
             ids.append(item['id'])
             audio_files.append(item['audio_file'])
             durations.append(item['duration'])
+            cers.append(item.get('cer'))
             texts.append(item['text'])
             offsets.append(item['offset'])
             speakers.append(item['speaker'])
             orig_srs.append(item['orig_sr'])
             langs.append(item['lang'])
 
-        super().__init__(ids, audio_files, durations, texts, offsets, speakers, orig_srs, langs, *args, **kwargs)
+        super().__init__(ids, audio_files, durations, cers, texts, offsets, speakers, orig_srs, langs, *args, **kwargs)
 
 
 class SpeechLabel(_Collection):

@@ -132,7 +132,48 @@ def get_bpe_dataset(
     return dataset
 
 
-def get_tarred_dataset(
+def get_tarred_char_dataset(
+    config: dict, shuffle_n: int, global_rank: int, world_size: int, augmentor: Optional['AudioAugmentor'] = None
+) -> audio_to_text.TarredAudioToCharDataset:
+    """
+    Instantiates a Character Encoding based TarredAudioToCharDataset.
+
+    Args:
+        config: Config of the TarredAudioToCharDataset.
+        shuffle_n: How many samples to look ahead and load to be shuffled.
+            See WebDataset documentation for more details.
+        global_rank: Global rank of this device.
+        world_size: Global world size in the training method.
+        augmentor: Optional AudioAugmentor object for augmentations on audio data.
+
+    Returns:
+        An instance of TarredAudioToCharDataset.
+    """
+    dataset = audio_to_text.TarredAudioToCharDataset(
+        audio_tar_filepaths=config['tarred_audio_filepaths'],
+        manifest_filepath=config['manifest_filepath'],
+        labels=config['labels'],
+        sample_rate=config['sample_rate'],
+        int_values=config.get('int_values', False),
+        augmentor=augmentor,
+        shuffle_n=shuffle_n,
+        max_duration=config.get('max_duration', None),
+        min_duration=config.get('min_duration', None),
+        max_cer=config.get('max_cer', None),
+        max_utts=config.get('max_utts', 0),
+        blank_index=config.get('blank_index', -1),
+        unk_index=config.get('unk_index', -1),
+        normalize=config.get('normalize_transcripts', False),
+        trim=config.get('trim_silence', False),
+        parser=config.get('parser', 'en'),
+        shard_strategy=config.get('tarred_shard_strategy', 'scatter'),
+        global_rank=global_rank,
+        world_size=world_size,
+    )
+    return dataset
+
+
+def get_tarred_bpe_dataset(
     config: dict,
     shuffle_n: int,
     global_rank: int,

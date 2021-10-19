@@ -93,7 +93,7 @@ def __parse_item(line: str, manifest_file: str) -> Dict[str, Any]:
     if 'duration' not in item:
         raise ValueError(
             f"Manifest file {manifest_file} has invalid json line structure: {line} without proper duration key."
-        )
+        ) 
 
     # Text.
     if 'text' in item:
@@ -112,6 +112,7 @@ def __parse_item(line: str, manifest_file: str) -> Dict[str, Any]:
         speaker=item.get('speaker', None),
         orig_sr=item.get('orig_sample_rate', None),
         lang=item.get('lang', None),
+        cer=item.get('cer', None)
     )
 
     return item
