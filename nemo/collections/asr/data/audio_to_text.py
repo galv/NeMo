@@ -696,6 +696,7 @@ class _TarredAudioToTextDataset(IterableDataset):
                     self.current_bytes, self.current_fn = next(self.iterator)
                     self.offset_id = 0
                 else:
+                    print("GALVEZ:collection=", self.collection.mapping)
                     offset_list = self.collection.mapping[self.current_fn]
                     if len(offset_list) == self.offset_id + 1:
                         self.current_bytes, self.current_fn = next(self.iterator)
