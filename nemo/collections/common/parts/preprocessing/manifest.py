@@ -95,6 +95,7 @@ def __parse_item(line: str, manifest_file: str) -> Dict[str, Any]:
     # If using a tarred dataset, the "audio_path" is like "_home_data_tarred_wavs_xxxx.wav",
     # so we will just ignore it.
     manifest_dir = Path(manifest_file).parent
+    item['audio_file'] = item['audio_file'].replace("/", "_")
     audio_file = Path(item['audio_file'])
     if not audio_file.is_file() and not audio_file.is_absolute() and audio_file.parent != Path("."):
         # assume the wavs/ dir and manifest are under the same parent dir
