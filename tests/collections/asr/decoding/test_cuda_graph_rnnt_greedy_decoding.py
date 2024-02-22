@@ -76,3 +76,51 @@ def test_cuda_graph_rnnt_greedy_decoder(model_name, batch_size, enable_bfloat16)
             print("erroneous samples:")
             print("Original transcript:", actual)
             print("New transcript:", fast)
+
+def test_change_devices():
+    if torch.cuda.device_count() < 2:
+        pytest.skip("Test requires more than 2 GPUs")
+
+    first_device = torch.device("cuda:0")
+    second_device = torch.device("cuda:1")
+
+    model_name = "stt_en_fastconformer_transducer_xlarge"
+    batch_size = 1
+
+    conf = ASRModel.from_pretrained(model_name, return_config=True)
+    with open_dict(conf):
+        conf["decoding"]["greedy"]["max_symbols"] = 5
+        conf["decoding"]["greedy"]["loop_labels"] = False
+        conf["decoding"]["greedy"]["use_cuda_graph_decoder"] = True
+
+    nemo_model = ASRModel.from_pretrained(model_name, map_location=second_device)
+    nemo_model.change_decoding_strategy(conf["decoding"])
+
+    # import ipdb; ipdb.set_trace()
+
+    # Test that the model can run successfully when it is first
+    # initialized on second_device and then transferred to
+    # true_device
+    nemo_model.to(first_device)
+    audio_filepaths = glob.glob("tests/.data/asr/test/an4/wav/*.wav")
+    torch.cuda.nvtx.range_push("First time")
+    with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):
+        second_device_transcripts, _ = nemo_model.transcribe(audio_filepaths, batch_size=batch_size, num_workers=None)
+    torch.cuda.nvtx.range_pop()
+
+    # Test that the model can run successfully back on second_device
+    # after having been first run on first_device. Because the
+    # decoder's data structures are lazily initialized, this activates
+    # slightly different code than the first case (where the decoder
+    # has not run at all), so we want to exercise both cases.
+    nemo_model.to(second_device)
+
+    # torch.cuda.set_device(second_device)
+
+    torch.cuda.nvtx.range_push("Second time")
+    with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):
+        first_device_transcripts, _ = nemo_model.transcribe(audio_filepaths, batch_size=batch_size, num_workers=None)
+    torch.cuda.nvtx.range_pop()
+    # Sanity check: The device we run on should not change execution
+    # output.
+    assert first_device_transcripts == second_device_transcripts
