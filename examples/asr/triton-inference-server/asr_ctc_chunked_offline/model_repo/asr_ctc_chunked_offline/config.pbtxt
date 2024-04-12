@@ -12,35 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: "asr_ctc"
+name: "asr_ctc_chunked_offline"
 backend: "python"
 max_batch_size: 32
 
 parameters [
   {
-    key: "model_name_or_path"
-    value: {string_value: "nvidia/parakeet-ctc-1.1b"}
+    key: "model_name"
+    value: { string_value: "nvidia/parakeet-ctc-1.1b" }  # .nemo model or pretrained model name
   },
   {
     key: "dtype"
     value: { string_value: "float16" }
   },
   {
-    key: "decoding_strategy"
-    value: { string_value: "greedy"}   #'greedy','beam', 'pyctcdecode', 'flashlight'
+    key: "chunk_len_in_secs"
+    value: { string_value: "20.0" }
   },
   {
-    key: "beam_size"
-    value: { string_value: "8"}
+    key: "total_buffer_in_secs"
+    value: { string_value: "30.0" }
   },
   {
-    key: "language_model"     # not supported yet
-    value: { string_value: ""}
+    key: "batch_size"
+    value: { string_value: "32"}
+  },
+  {
+    key: "chunk_strategy"
+    value: { string_value: "hf_chunked_infer"}  # hf_chunked_infer, nemo_chunked_infer
   }
 ]
 
-# There is no sequence_batching support in pytriton unfortunately...
-# So pytriton is not suited to streaming ASR.
 
 input [
   {
@@ -55,7 +57,7 @@ input [
     dims: [1]
   }
 ]
-# TODO: Consider adding a sampling frequency parameter here. Just for error checking.
+
 
 output [
   {
@@ -67,6 +69,7 @@ output [
 
 dynamic_batching {
     preferred_batch_size: [32]
+    max_queue_delay_microseconds: 1000
   }
 
 instance_group [

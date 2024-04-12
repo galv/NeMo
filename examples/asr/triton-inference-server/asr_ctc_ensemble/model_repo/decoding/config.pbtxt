@@ -12,22 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: "asr_ctc"
+name: "decoding"
 backend: "python"
 max_batch_size: 32
 
 parameters [
   {
-    key: "model_name_or_path"
-    value: {string_value: "nvidia/parakeet-ctc-1.1b"}
-  },
-  {
-    key: "dtype"
-    value: { string_value: "float16" }
+    key: "model_name"
+    value: { string_value: "nvidia/parakeet-ctc-1.1b" }  # .nemo model or pretrained model name
   },
   {
     key: "decoding_strategy"
-    value: { string_value: "greedy"}   #'greedy','beam', 'pyctcdecode', 'flashlight'
+    value: { string_value: "greedy"}  # 'greedy', 'beam', 'pyctcdecode', 'flashlight'
   },
   {
     key: "beam_size"
@@ -39,27 +35,23 @@ parameters [
   }
 ]
 
-# There is no sequence_batching support in pytriton unfortunately...
-# So pytriton is not suited to streaming ASR.
-
 input [
-  {
-    name: "WAV"
+   {
+    name: "log_probs"
     data_type: TYPE_FP32
-    dims: [-1]
-    allow_ragged_batch: true
+    dims: [-1, 1025] # 1025 is vocab size
   },
   {
-    name: "WAV_LENS"
+    name: "encoded_length"
     data_type: TYPE_INT32
     dims: [1]
   }
 ]
-# TODO: Consider adding a sampling frequency parameter here. Just for error checking.
+
 
 output [
   {
-    name: "TRANSCRIPTS"
+    name: "TRANSCRIPT"
     data_type: TYPE_STRING
     dims: [1]
   }
@@ -67,7 +59,8 @@ output [
 
 dynamic_batching {
     preferred_batch_size: [32]
-  }
+    
+}
 
 instance_group [
     {
