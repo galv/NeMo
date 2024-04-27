@@ -97,11 +97,11 @@ class TritonPythonModel:
            
             responses = []
             for i in range(total_number_of_samples):
-                processed_signal = processed_example[i]
+                processed_signal = processed_example[i].contiguous()
                
                 processed_signal_len = processed_example_length[i]
                
-                processed_signal = processed_signal[:, 0:processed_signal_len]
+                #processed_signal = processed_signal[:, 0:processed_signal_len]
                 
                 processed_signal_len = torch.tensor([processed_signal_len], dtype=torch.int32).cuda()
                 

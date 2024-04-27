@@ -146,6 +146,8 @@ class TritonPythonModel:
         if ctc_decoding.strategy != 'greedy':
           ctc_decoding.beam_size = int(parameters['beam_size']['string_value'])
         asr_model.change_decoding_strategy(ctc_decoding)
+        asr_model.preprocessor.featurizer.dither = 0.0
+        asr_model.preprocessor.featurizer.pad_to = 0
         self.model = asr_model.cuda()
         self.model.encoder.freeze()
         self.model.decoder.freeze()

@@ -1,2 +1,3 @@
 asyncio_pool
 tritonclient
+soundfile

@@ -51,11 +51,7 @@ class HFChunkedASR:
         self.subsampling_rate = asr_model.encoder.subsampling_factor
         self.samples_to_logits_ratio = self.get_sample_logits_ratio()
         self.batch_size = batch_size
-        self.preprocessor = self.extract_preprocessor(asr_model.device)
-        self.asr_model.preprocessor = self.preprocessor
-        self.asr_model.encoder.freeze()
-        self.asr_model.decoder.freeze()
-        self.asr_model.eval()
+        self.preprocessor = asr_model.preprocessor  
 
     def get_sample_logits_ratio(self):
         preprocessor = self.cfg.preprocessor
@@ -64,14 +60,6 @@ class HFChunkedASR:
         sample_to_logits = sample_to_frame * self.subsampling_rate
         return sample_to_logits
     
-    def extract_preprocessor(self, device):
-        cfg = copy.deepcopy(self.cfg)
-        OmegaConf.set_struct(cfg.preprocessor, False)
-        cfg.preprocessor.dither = 0.0
-        cfg.preprocessor.pad_to = 0
-        preprocessor = self.asr_model.from_config_dict(cfg.preprocessor)
-        return preprocessor.to(device)
-  
     def get_batch_preds(self, samples):
         all_item_info = []
         all_log_probs = []

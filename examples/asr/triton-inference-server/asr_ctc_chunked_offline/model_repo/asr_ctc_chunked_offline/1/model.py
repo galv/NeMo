@@ -126,7 +126,13 @@ class TritonPythonModel:
         else:
            device = torch.device('cpu')
         asr_model.to(device)
+        asr_model.preprocessor.featurizer.dither = 0.0
+        asr_model.preprocessor.featurizer.pad_to = 0
+        # Switch model to evaluation mode
         asr_model.eval()
+        # Freeze the encoder and decoder modules
+        asr_model.encoder.freeze()
+        asr_model.decoder.freeze()
         
         model_cfg = copy.deepcopy(asr_model._cfg)
         if model_cfg.preprocessor.normalize != "per_feature":
