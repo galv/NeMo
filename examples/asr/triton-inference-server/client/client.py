@@ -86,7 +86,7 @@ async def main(args):
         url=args.url, verbose=args.verbose)
     
     speech_client = OfflineSpeechClient(triton_client, args.model_name, grpcclient)
-    concurrency = args.concurrency
+    concurrency = min(args.concurrency, len(filepaths))
     pool = AioPool(size=concurrency)
     print(f'=== Parallel Generation Requests Start - Total number of Tasks:{len(filepaths)} - Concurrency Rate:{pool.size} ===')
     start = time.time()
