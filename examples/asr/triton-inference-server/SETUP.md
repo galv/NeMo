@@ -5,7 +5,6 @@ docker run --gpus '"device=0"' -it -v $PWD:/ws --shm-size=8g --ulimit memlock=-1
 apt-get update && apt-get install -y libsndfile1 ffmpeg
 pip install Cython
 pip install nemo_toolkit['all']
-
 ```
 
 ## client

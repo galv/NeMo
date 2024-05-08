@@ -71,6 +71,7 @@ class EncDecModel(torch.nn.Module):
     def forward(self, audio_signal, length):
         enc_out, encoded_length = self.encoder(audio_signal=audio_signal, length=length)
         dec_out = self.decoder(encoder_output=enc_out)
+        encoded_length = encoded_length.to(torch.int32) # Ensure the type is int32
         return dec_out, encoded_length
 
 

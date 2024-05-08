@@ -12,6 +12,7 @@
 
 test-clean - 19452.28s
 
+**asr_ctc/model_repo**
 |concurrency | dtype | num instance| RTFx|duration|sorted|allow_ragged_batch|
 |------------|-------|-------------|-----|--------|------|------------------|
 |10          |float16| 1           |     | 77.86  | N    | T                |
@@ -26,11 +27,19 @@ test-clean - 19452.28s
 |70          |float16| 1           |     | 25.30  | N    | T                |
 |80          |float16| 1           | 765 | 25.40  | N    | T                |
 |80          |float16| 1           |     | 12.18  | Y    | T                |
-|100         |float16| 1           |     | 12.14  | Y    | T                |
+|100         |float16| 1           | 1602| 12.14  | Y    | T                |
 |10          |float16| 2           |     | 60.22  | N    | T                |
 |50          |float16| 2           |     | 28.15  | N    | T                |
 |100         |float16| 2           |     | 26.19  | N    | T                |
 |20          |float16| 2           |     | 34.06  | Y    | T                |
-|100         |float16| 2           |     | 13.61  | Y    | T                |
+|100         |float16| 2           |1429 | 13.61  | Y    | T                |
 |150         |float16| 2           |     | 11.91  | Y    | T                |
 |200         |float16| 2           | 1661| 11.71  | Y    | T                |
+
+
+**asr_ctc/model_repo_trt**
+|concurrency | dtype | num instance| RTFx|duration|sorted|allow_ragged_batch|
+|------------|-------|-------------|-----|--------|------|------------------|
+|30          |float16|1            | 1134|17.15   |Y     | T                |
+|100         |float16|1            | 1746|11.14   |Y     | T                |
+|100         |float16|2            | 2137|9.10    |Y     | T                |

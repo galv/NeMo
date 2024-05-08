@@ -5,7 +5,7 @@ python3 NeMo/examples/asr/triton-inference-server/scripts/export_asr_ctc_onnx.py
 
 # OR
 
-python3 NeMo/examples/asr/triton-inference-server/scripts/export_asr_ctc_onnx.py --pretrained_model=parakeet-ctc-1.1b/parakeet-ctc-1.1b.nemo --onnx_model=onnx_model/model.onnx
+python3 NeMo/examples/asr/triton-inference-server/scripts/export_asr_ctc_onnx.py --pretrained_model=nvidia/parakeet-ctc-1.1b --onnx_model=onnx_model/model.onnx
 
 ```
 
