@@ -28,6 +28,7 @@ class TrtInfer():
         length = length.contiguous()
         audio_signal = audio_signal.to(device=self.device)
         length = length.to(device=self.device)
+        torch.cuda.synchronize()
         context.set_input_shape("audio_signal", audio_signal.shape) 
         context.set_tensor_address('audio_signal', audio_signal.data_ptr())
         context.set_input_shape("length", length.shape)  # b,
