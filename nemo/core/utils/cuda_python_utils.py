@@ -16,6 +16,7 @@ import contextlib
 
 import numpy as np
 import torch
+from torch.cuda.graphs import stream_to_pool
 from packaging.version import Version
 
 __CUDA_PYTHON_MINIMUM_VERSION_CUDA_GRAPH_CONDITIONAL_NODES_SUPPORTED__ = (12, 3)  # 12030
@@ -213,7 +214,7 @@ def if_else_node(pred: torch.Tensor, true_fn, false_fn, operands):
                 1,
                 cudart.cudaStreamUpdateCaptureDependenciesFlags.cudaStreamSetCaptureDependencies,
             )
-        )    
+        )
         body_stream = torch.cuda.Stream(pred.device)
         cu_call(
             cudart.cudaStreamBeginCaptureToGraph(
@@ -222,22 +223,51 @@ def if_else_node(pred: torch.Tensor, true_fn, false_fn, operands):
                 None,
                 None,
                 0,
+                # TODO: Should we inherit the parent's capture mode?
+                # Probably.
                 cudart.cudaStreamCaptureMode.cudaStreamCaptureModeThreadLocal,
             )
         )
-        with torch.cuda.stream(body_stream):
+
+        pool = stream_to_pool[torch.cuda.current_stream(device=pred.device)]
+
+        with _use_cuda_memory_pool_manager(pred.device.index, pool, body_stream):
             outs.append(fn(*operands))
             # Copy these two outputs into a new output buffer. Well,
             # actually, what we would like is to be able to merge these two
             # tensors into the same tensor... Is there an obvious way to do
             # that?
             if len(outs) == 2:
-                outs[0].copy_(outs[1])
+                # import ipdb; ipdb.set_trace()
+                for if_out, else_out in zip(outs[0], outs[1]):
+                    if_out.copy_(else_out)
         cu_call(cudart.cudaStreamEndCapture(body_stream.cuda_stream))
     assert len(outs) == 2
-    assert outs[0].shape == outs[1].shape
+    # assert outs[0].shape == outs[1].shape
     # outs[0].copy_(outs[1])
     return outs[0]
+
+@contextlib.contextmanager
+def _use_cuda_memory_pool_manager(device, mem_pool, stream):
+    """
+    Context manager to use cuda graph pool for new allocations. If you use this manager
+    all cudagraph tensors in use should be reflected in the allocator or they will be overwritten.
+    existing_graph should already have been used in a capture, and the mem_pool must already exist,
+    because this manager will not preserve a reference to the pool which keeps it alive.
+    """
+
+    try:
+        torch._C._cuda_endAllocateCurrentStreamToPool(device, mem_pool)
+        with torch.cuda.stream(stream), torch.device(device):
+            torch._C._cuda_beginAllocateCurrentStreamToPool(device, mem_pool)
+            try:
+                yield
+            finally:
+                torch._C._cuda_endAllocateCurrentStreamToPool(device, mem_pool)
+                torch._C._cuda_releasePool(device, mem_pool)
+    finally:
+        torch._C._cuda_beginAllocateCurrentStreamToPool(device, mem_pool)
+
 
 @contextlib.contextmanager
 def with_conditional_node(while_loop_kernel, while_loop_args, while_loop_conditional_handle, device):
