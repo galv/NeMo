@@ -380,9 +380,6 @@ def main(cfg: TranscriptionConfig) -> Union[TranscriptionConfig, List[Hypothesis
 
     with torch.amp.autocast('cuda' if torch.cuda.is_available() else 'cpu', dtype=amp_dtype, enabled=cfg.amp):
         with torch.no_grad():
-            if cfg.calculate_rtfx:
-                start_time = time.time()
-
             override_cfg = asr_model.get_transcribe_config()
             override_cfg.batch_size = cfg.batch_size
             override_cfg.num_workers = cfg.num_workers
@@ -399,6 +396,17 @@ def main(cfg: TranscriptionConfig) -> Union[TranscriptionConfig, List[Hypothesis
                 audio=filepaths,
                 override_config=override_cfg,
             )
+            if cfg.calculate_rtfx:
+                start_time = time.time()
+            for i in range(1):
+                if i == 1:
+                    torch.cuda.cudart().cudaProfilerStart()
+                transcriptions = asr_model.transcribe(
+                    audio=filepaths,
+                    override_config=override_cfg,
+                )
+                if i == 1:
+                    torch.cuda.cudart().cudaProfilerStop()
             if cfg.calculate_rtfx:
                 transcribe_time = time.time() - start_time
 
